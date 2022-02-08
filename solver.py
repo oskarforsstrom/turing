@@ -9,7 +9,7 @@ class Grid:
     def __init__(self,
     func = "Sch",
     num_timesteps = 1000,
-    dt = 0.001,
+    dt = 0.00004,
     dx = 0.1,
     dy = 0.1,
     num_dx = 100,
@@ -56,6 +56,7 @@ class Grid:
         u = self.ugrid
         v = self.vgrid
         D_u = self.D_u
+        D_v = self.D_v
         f = getattr(self, self.func + '_f')
         g = getattr(self, self.func + '_g')
 
@@ -64,16 +65,25 @@ class Grid:
             for y in range(1,self.num_dy-1):
                 u[n+1][x][y] = ( u[n][x][y] + ((D_u*k) / h**2) * 
                             (u[n][x+1][y] + u[n][x-1][y] + u[n][x][y+1] + u[n][x][y-1] - 4*u[n][x][y]) + k*f(u[n][x][y], v[n][x][y]) )
+                v[n+1][x][y] = ( v[n][x][y] + ((D_v*k) / h**2) * 
+                            (v[n][x+1][y] + v[n][x-1][y] + v[n][x][y+1] + v[n][x][y-1] - 4*v[n][x][y]) + k*g(u[n][x][y], v[n][x][y]) )
 
         if self.no_flux:
 
             for x in range(1, self.num_dx-1):
-                u[n][x][0] = u[n][x][1]
-                u[n][x][self.num_dy - 1] = u[n][x][self.num_dy - 2]
+                u[n+1][x][0] = u[n+1][x][1]
+                u[n+1][x][self.num_dy - 1] = u[n+1][x][self.num_dy - 2]
+
+                v[n+1][x][0] = v[n][x][1]
+                v[n+1][x][self.num_dy - 1] = v[n+1][x][self.num_dy - 2]
+
 
             for y in range(1, self.num_dy-1):
-                u[n][0][y] = u[n][1][y]
-                u[n][self.num_dx - 1][y] = u[n][self.num_dx - 2][y]
+                u[n+1][0][y] = u[n+1][1][y]
+                u[n+1][self.num_dx - 1][y] = u[n+1][self.num_dx - 2][y]
+
+                v[n+1][0][y] = v[n+1][1][y]
+                v[n+1][self.num_dx - 1][y] = v[n+1][self.num_dx - 2][y]
 
 
     def integrate(self):
@@ -85,6 +95,7 @@ class Grid:
         # generate homogenous grid with random perturbations
         init_grid = 2.5*np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-1, high=1, size=(self.num_dx, self.num_dy))
         self.ugrid[0] = init_grid
+        self.vgrid[0] = init_grid
 
     
     # Grierer-Meinhardt reaction functions

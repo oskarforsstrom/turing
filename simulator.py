@@ -9,9 +9,10 @@ class Simulator:
     def __init__(self, grid, steps_per_frame = 100):
         self.grid = grid
         self.steps_per_frame = steps_per_frame
+        print(self.grid.ugrid[0])
 
-        self.grid.ugrid[0][0][0] = 0
-        self.grid.ugrid[0][self.grid.num_dx-1][0] = 5
+        self.grid.ugrid[0][0][0] = 2
+        self.grid.ugrid[0][self.grid.num_dx-1][0] = 3
 
         # Initialize figure for animation
         self.fig = plt.figure()
@@ -28,18 +29,20 @@ class Simulator:
         """
 
         if step > 0:
-            print(step)
+            step = step - 1
+            if step%10==0:
+                print(step)
             self.grid.fwdEulerStep(step)
+            
         self.im.set_array(self.grid.ugrid[step])
         return self.im,
 
 
     def animate(self):
-        # nn = self.grid.num_timesteps
-        nn = 2
+        nn = self.grid.num_timesteps
         print('numframes: ' + str(nn))
         anim = animation.FuncAnimation(self.fig, self.snapshot,
-            frames=nn, interval=3, blit=True, repeat=False)
+            frames=nn, interval=5, blit=True, repeat=False)
         plt.show()  # show the animation
 
 
