@@ -1,15 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
+# import simulator as Sim
 
 class Grid:
     """class for grid"""
 
     def __init__(self,
     func = "Sch",
-    steps_per_frame = 100,
     num_timesteps = 1000,
-    dt = 0.1,
+    dt = 0.001,
     dx = 0.1,
     dy = 0.1,
     num_dx = 100,
@@ -22,12 +22,11 @@ class Grid:
     c3=1,
     c4=0,
     c5=0,
-    noflux=True,
+    no_flux=True,
         ):
 
         self.func = func
         
-        self.steps_per_frame = steps_per_frame      # number of integration steps per frame
         self.num_timesteps = num_timesteps      # number of time steps - 1
         self.dt = dt                            # length of time step
 
@@ -45,14 +44,11 @@ class Grid:
         self.c4 = c4
         self.c5 = c5
 
-        self.noflux = noflux
+        self.no_flux = no_flux
 
         self.ugrid = np.zeros((self.num_timesteps, self.num_dx, self.num_dy))
         self.vgrid = np.zeros((self.num_timesteps, self.num_dx, self.num_dy))
 
-        # Initialize figure for animation
-        self.fig = plt.figure()
-        self.ax = plt.subplot(xlim=(0, self.num_dx), ylim=(0, self.num_dy))
 
     def fwdEulerStep(self, n):
         h = self.dx # = dy
@@ -73,11 +69,11 @@ class Grid:
 
             for x in range(1, self.num_dx-1):
                 u[n][x][0] = u[n][x][1]
-                u[n][x][self.num_dy] = u[n][x][self.num_dy - 1]
+                u[n][x][self.num_dy - 1] = u[n][x][self.num_dy - 2]
 
             for y in range(1, self.num_dy-1):
                 u[n][0][y] = u[n][1][y]
-                u[n][self.num_dx][y] = u[n][self.num_dx - 1][y]
+                u[n][self.num_dx - 1][y] = u[n][self.num_dx - 2][y]
 
 
     def integrate(self):
@@ -87,27 +83,8 @@ class Grid:
 
     def initializeGrid(self):
         # generate homogenous grid with random perturbations
-        init_grid = np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-0.1, high=0.1, size=(self.num_dx-1, self.num_dy-1))
+        init_grid = 2.5*np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-1, high=1, size=(self.num_dx, self.num_dy))
         self.ugrid[0] = init_grid
-
-
-    def snapshot(self) :
-
-        """
-            This is an 'auxillary' function needed by animation.FuncAnimation
-            in order to show the animation of the 2D Lennard-Jones system
-        """
-
-        self.integrate()
-        return self.ax.scatter(self.x, self.y, s=1500, marker='o', c="r"),
-
-
-    def animate(self):
-
-        nn = self.num_timesteps//self.stepsPerFrame 
-        anim = animation.FuncAnimation(self.fig, self.snapshot,
-            frames=nn, interval=50, blit=True, repeat=False)
-        plt.show()  # show the animation
 
     
     # Grierer-Meinhardt reaction functions
