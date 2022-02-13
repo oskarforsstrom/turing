@@ -8,8 +8,8 @@ class Grid:
 
     def __init__(self,
     func = "Sch",
-    num_timesteps = 1000,
-    dt = 0.00004,
+    num_timesteps = 20000,
+    dt = 0.00005, # =< (dx^2 + dy^2)/(8*D_i) = 0.0005
     dx = 0.1,
     dy = 0.1,
     num_dx = 100,
@@ -93,9 +93,10 @@ class Grid:
 
     def initializeGrid(self):
         # generate homogenous grid with random perturbations
-        init_grid = 2.5*np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-1, high=1, size=(self.num_dx, self.num_dy))
+        # init_grid = 2.5*np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-1, high=1, size=(self.num_dx, self.num_dy))
+        init_grid = np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-1, high=0, size=(self.num_dx, self.num_dy))
         self.ugrid[0] = init_grid
-        self.vgrid[0] = init_grid
+        self.vgrid[0] = np.ones((self.num_dx, self.num_dy)) - init_grid
 
     
     # Grierer-Meinhardt reaction functions

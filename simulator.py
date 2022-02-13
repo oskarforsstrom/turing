@@ -11,8 +11,8 @@ class Simulator:
         self.steps_per_frame = steps_per_frame
         print(self.grid.ugrid[0])
 
-        self.grid.ugrid[0][0][0] = 2
-        self.grid.ugrid[0][self.grid.num_dx-1][0] = 3
+        self.grid.ugrid[0][0][0] = 0
+        self.grid.ugrid[0][self.grid.num_dx-1][0] = 1
 
         # Initialize figure for animation
         self.fig = plt.figure()
