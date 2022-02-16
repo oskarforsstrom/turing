@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
+from scipy.ndimage import gaussian_filter
 # import simulator as Sim
 
 class Grid:
@@ -9,9 +10,9 @@ class Grid:
     def __init__(self,
     func = "Sch",
     num_timesteps = 20000,
-    dt = 0.00005, # =< (dx^2 + dy^2)/(8*D_i) = 0.0005
-    dx = 0.1,
-    dy = 0.1,
+    dt = 0.00008, # =< (dx^2 + dy^2)/(8*D_i) = 0.0005
+    dx = 0.4,
+    dy = 0.4,
     num_dx = 100,
     num_dy = 100,
     D_u = 1,
@@ -90,13 +91,14 @@ class Grid:
         for n in range(self.num_timesteps-1):
             self.fwdEulerStep(n)
 
-
+    # generate homogenous grid with random perturbations
     def initializeGrid(self):
-        # generate homogenous grid with random perturbations
-        # init_grid = 2.5*np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-1, high=1, size=(self.num_dx, self.num_dy))
-        init_grid = np.ones((self.num_dx, self.num_dy)) + np.random.uniform(low=-1, high=0, size=(self.num_dx, self.num_dy))
-        self.ugrid[0] = init_grid
-        self.vgrid[0] = np.ones((self.num_dx, self.num_dy)) - init_grid
+        u_star = (1/self.k)*(self.c1 + self.c2)
+        v_star = (self.c3/self.c2) * (1/u_star**2)
+        ones = np.ones((self.num_dx, self.num_dy))
+
+        self.ugrid[0] = (u_star)*ones + np.random.uniform(low=-0.2, high=0.2, size=(self.num_dx, self.num_dy))
+        self.vgrid[0] = (v_star)*ones + np.random.uniform(low=-0.2, high=0.2, size=(self.num_dx, self.num_dy))
 
     
     # Grierer-Meinhardt reaction functions
@@ -112,6 +114,8 @@ class Grid:
 
     def Sch_g(self, u, v):
         return self.c2 - self.c3*u**2*v
+
+    
         
 
 def main():
