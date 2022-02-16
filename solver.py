@@ -18,6 +18,7 @@ class Grid:
     D_u = 1,
     D_v = 40,
     k=1, 
+    c_=1,
     c1=0.1, 
     c2=0.9, 
     c3=1,
@@ -39,6 +40,7 @@ class Grid:
         self.D_u = D_u                          # Diffusion rate for u
         self.D_v = D_v                          # Diffusion rate for v
         self.k = k                              # Reaction parameters
+        self.c_ = c_
         self.c1 = c1
         self.c2 = c2
         self.c3 = c3
@@ -110,7 +112,7 @@ class Grid:
 
     # Schnakenberg reaction functions
     def Sch_f(self, u, v):
-        return self.c1 - self.k*u + self.c3*u**2*v     # k substitutes c_-1 in the paper
+        return self.c1 - self.c_*u + self.c3*u**2*v     
 
     def Sch_g(self, u, v):
         return self.c2 - self.c3*u**2*v

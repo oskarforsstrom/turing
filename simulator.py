@@ -65,11 +65,13 @@ def main():
         N = 1
 
     save_time = 1000
-    u_file = "./patterns/{}_u_{}".format(grid.func, N) # ex: Sch_u_2, GM_u_15
-    v_file = "./patterns/{}_v_{}".format(grid.func, N)
 
-    np.save(u_file, grid.ugrid[save_time])
-    np.save(v_file, grid.vgrid[save_time])
+    if grid.ugrid[save_time].any(): # Checks that the grid at the specified time is not zero. np.ndarray.any() == False if it's the zero matrix
+        u_file = "./patterns/{}_u_{}".format(grid.func, N) # ex: Sch_u_2, GM_u_15
+        v_file = "./patterns/{}_v_{}".format(grid.func, N)
+        
+        np.save(u_file, grid.ugrid[save_time])
+        np.save(v_file, grid.vgrid[save_time])
 
 
 if __name__ == "__main__":
