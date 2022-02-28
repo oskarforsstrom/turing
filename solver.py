@@ -10,7 +10,7 @@ class Grid:
     def __init__(self,
     func = "Sch",
     num_timesteps = 20000,
-    dt = 0.00008, # =< (dx^2 + dy^2)/(8*D_i) = 0.0005
+    dt = 0.00001, # =< (dx^2 + dy^2)/(8*D_i) = 0.0005
     dx = 0.4,
     dy = 0.4,
     num_dx = 100,
@@ -25,6 +25,7 @@ class Grid:
     c4=0,
     c5=0,
     no_flux=True,
+    periodic=False
         ):
 
         self.func = func
@@ -48,6 +49,7 @@ class Grid:
         self.c5 = c5
 
         self.no_flux = no_flux
+        self.periodic = periodic
 
         self.ugrid = np.zeros((self.num_timesteps, self.num_dx, self.num_dy))
         self.vgrid = np.zeros((self.num_timesteps, self.num_dx, self.num_dy))
@@ -63,15 +65,25 @@ class Grid:
         f = getattr(self, self.func + '_f')
         g = getattr(self, self.func + '_g')
 
-        # u 
-        for x in range(1,self.num_dx-1):
-            for y in range(1,self.num_dy-1):
-                u[n+1][x][y] = ( u[n][x][y] + ((D_u*k) / h**2) * 
-                            (u[n][x+1][y] + u[n][x-1][y] + u[n][x][y+1] + u[n][x][y-1] - 4*u[n][x][y]) + k*f(u[n][x][y], v[n][x][y]) )
-                v[n+1][x][y] = ( v[n][x][y] + ((D_v*k) / h**2) * 
-                            (v[n][x+1][y] + v[n][x-1][y] + v[n][x][y+1] + v[n][x][y-1] - 4*v[n][x][y]) + k*g(u[n][x][y], v[n][x][y]) )
+        if self.periodic:
+
+            for x in range(0,self.num_dx):
+                for y in range(0,self.num_dy):
+                    u[n+1][x][y] = ( u[n][x][y] + ((D_u*k) / h**2) * 
+                                (u[n][(x+1)%self.num_dx][y] + u[n][(x-1)%self.num_dx][y] + u[n][x][(y+1)%self.num_dy] + u[n][x][(y-1)%self.num_dy] - 4*u[n][x][y]) + k*f(u[n][x][y], v[n][x][y]) )
+                    v[n+1][x][y] = ( v[n][x][y] + ((D_v*k) / h**2) * 
+                                (v[n][(x+1)%self.num_dx][y] + v[n][(x-1)%self.num_dx][y] + v[n][x][(y+1)%self.num_dy] + v[n][x][(y-1)%self.num_dy] - 4*v[n][x][y]) + k*g(u[n][x][y], v[n][x][y]) )
+
 
         if self.no_flux:
+
+            for x in range(1,self.num_dx-1):
+                for y in range(1,self.num_dy-1):
+                    u[n+1][x][y] = ( u[n][x][y] + ((D_u*k) / h**2) * 
+                                (u[n][x+1][y] + u[n][x-1][y] + u[n][x][y+1] + u[n][x][y-1] - 4*u[n][x][y]) + k*f(u[n][x][y], v[n][x][y]) )
+                    v[n+1][x][y] = ( v[n][x][y] + ((D_v*k) / h**2) * 
+                                (v[n][x+1][y] + v[n][x-1][y] + v[n][x][y+1] + v[n][x][y-1] - 4*v[n][x][y]) + k*g(u[n][x][y], v[n][x][y]) )
+
 
             for x in range(1, self.num_dx-1):
                 u[n+1][x][0] = u[n+1][x][1]
@@ -99,8 +111,8 @@ class Grid:
         v_star = (self.c3/self.c2) * (1/u_star**2)
         ones = np.ones((self.num_dx, self.num_dy))
 
-        self.ugrid[0] = (u_star)*ones + np.random.uniform(low=-0.2, high=0.2, size=(self.num_dx, self.num_dy))
-        self.vgrid[0] = (v_star)*ones + np.random.uniform(low=-0.2, high=0.2, size=(self.num_dx, self.num_dy))
+        self.ugrid[0] = (u_star)*ones + np.random.uniform(low=-0.05, high=0.05, size=(self.num_dx, self.num_dy))
+        self.vgrid[0] = (v_star)*ones + np.random.uniform(low=-0.05, high=0.05, size=(self.num_dx, self.num_dy))
 
     
     # Grierer-Meinhardt reaction functions
