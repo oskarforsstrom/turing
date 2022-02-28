@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import animation
 from scipy.ndimage import gaussian_filter
-# import simulator as Sim
+import math as m
 
 class Grid:
     """class for grid"""
@@ -129,7 +129,27 @@ class Grid:
     def Sch_g(self, u, v):
         return self.c2 - self.c3*u**2*v
 
-    
+    # returns True if the parameters passed to the function meets the instability 
+    # critera for the given reaction function (ex.: "Sch" for Schnakenberg)
+    # params = [c_-1, c1, c2, c3, c4, c5, k, D_u, D_v]
+    def param_check(self):
+
+        sh1 = (self.c3/self.c_) * (self.c1 + self.c2) # shortcut 1
+
+        # Schnakenberg reaction model
+        if self.func == "Sch":
+
+            # criterion 1
+            if -self.c_ + (2 * self.c_* self.c2)/(self.c1 + self.c2) - sh1**2 > 0:
+                return False
+            # criterion 2
+            if sh1 < 0:
+                return False
+            # criterion 3
+            if -self.D_u*(sh1**2 / self.c3) + self.D_v*self.c_ + self.D_v*(2 * self.c_ * self.c2)/(self.c1 + self.c2) < 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) or 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) < 0:
+                return False
+
+            return True
         
 
 def main():
