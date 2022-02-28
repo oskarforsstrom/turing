@@ -12,7 +12,7 @@ class Simulator:
         self.steps_per_frame = steps_per_frame
         print(self.grid.ugrid[0])
 
-        bootgrid = np.zeros((self.grid.num_dx, self.grid.num_dy))
+        bootgrid = ((colormin+colormax)/2)*np.ones((self.grid.num_dx, self.grid.num_dy))
         bootgrid[0][0] = colormin
         bootgrid[-1][-1] = colormax
 
