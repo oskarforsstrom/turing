@@ -32,7 +32,7 @@ class Simulator:
         if step > 0:
             step = step - 1
             if step%10==0:
-                print(step)
+                print('t: ' + str(step*self.grid.dt))
             self.grid.fwdEulerStep(step)
             
         self.im.set_array(self.grid.ugrid[step])
