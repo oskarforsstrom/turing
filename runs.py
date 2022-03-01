@@ -5,9 +5,15 @@ import os
 import numpy as np
 
 def main():
-    grid = Grid(no_flux=False, periodic=True)
+    dx=0.4
+    dy=0.4
+    dt=0.0001
+    D_u = 1
+    grid = Grid(no_flux=False, periodic=True, D_u=D_u, dt=dt)
     grid.initializeGrid()
-    simulator = Simulator(grid=grid)
+    if not grid.param_check():
+        print("NÄJ")
+    simulator = Simulator(grid=grid, colormin=0.5, colormax=1.5)
     simulator.animate()
 
     pattern_list = os.listdir('./patterns/')
