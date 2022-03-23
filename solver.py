@@ -146,10 +146,56 @@ class Grid:
             if sh1 < 0:
                 return False
             # criterion 3
-            if -self.D_u*(sh1**2 / self.c3) + self.D_v*self.c_ + self.D_v*(2 * self.c_ * self.c2)/(self.c1 + self.c2) < 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) or 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) < 0:
+            if -self.D_u*(sh1**2 / self.c3) + self.D_v*self.c_ + self.D_v*(2 * self.c_ * self.c2)/(self.c1 + self.c2) < 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) or 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) < 0:
                 return False
 
             return True
+        
+        # GM reaction model
+        if self.func == "GM":
+            u0, v0 = self.get_hom_state_GM(0)
+
+            # criterion 1
+            if -self.c2 -self.c5 - 2*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) > 0:
+                return False
+
+            crit2 = (self.c5*self.c2 
+            + 2*self.c5*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) 
+            - 2*self.c3*self.c4*(u0**3 / ( (1 + self.k*u0**2)**2) * v0**2))
+            if crit2 < 0:
+                return False
+
+            if self.D_u*self.c5 - self.D_v*self.c2 - 2*self.D_v*self.c3*(u0 / ((1 + self.k*u0**2) * v0)) < 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) or 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) < 0:
+                return False
+
+            return True
+
+    def get_hom_state_GM(self, root_guess):
+        
+        # newton iteration for finding u_star. 
+        u_star = root_guess
+        while True:
+            last = u_star
+
+            if self.delta_u_star_eq(u_star) != 0:
+                u_star = u_star - self.u_star_eq(u_star) / self.delta_u_star_eq(u_star)
+            else:
+                print("tf dude that's illegal. chillax my g. derivata = 0")
+
+        
+            if abs(u_star - last) < 10**-5:
+                break
+
+        v_star = (self.c4/self.c5) * (u_star**2) # derived from fixed point eq. See comment in u_star_eq below.
+
+        return u_star, v_star
+
+    def u_star_eq(self, root):
+        # derived from GM functions. Namely, finding fixed points for f=0, g=0. This u_star rite here 
+        return -self.k*self.c2*(root**3) + self.k*self.c1*(root**2) - self.c2*(root) + self.c1 - (self.c3*self.c5 / self.c4)
+
+    def delta_u_star_eq(self, root):
+        return -3*self.k*self.c2*(root**2) + 2*self.k*self.c1*(root) - self.c2
         
 
 def main():

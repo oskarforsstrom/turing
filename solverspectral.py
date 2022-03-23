@@ -51,8 +51,8 @@ class Grid:
 
     # generate homogenous grid with random perturbations
     def initializeGrid(self):
-        u_star = (1/self.k)*(self.c1 + self.c2)
-        v_star = (self.c3/self.c2) * (1/u_star**2)
+        u_star = (1/self.k)*(self.c1 + self.c2) ## only schnaken
+        v_star = (self.c3/self.c2) * (1/u_star**2) ## only schnaken
         ones = np.ones((self.num_dx, self.num_dy))
 
         self.ugrid[0] = (u_star)*ones + np.random.uniform(low=-0.05, high=0.05, size=(self.num_dx, self.num_dy))
