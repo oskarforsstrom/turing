@@ -11,6 +11,7 @@ class Grid:
     """class for grid"""
 
     def __init__(self,
+    func = "Sch",
     num_timesteps = 20000,
     dt = 0.00001, # =< (dx^2 + dy^2)/(8*D_i) = 0.0005
     dx = 0.4,
@@ -27,6 +28,10 @@ class Grid:
     c4=0,
     c5=0,
         ):
+
+        self.func = func
+        self.f = getattr(self, self.func + '_f')
+        self.g = getattr(self, self.func + '_g')
         
         self.num_timesteps = num_timesteps      # number of time steps - 1
         self.dt = dt                            # length of time step
@@ -51,8 +56,8 @@ class Grid:
 
     # generate homogenous grid with random perturbations
     def initializeGrid(self):
-        u_star = (1/self.k)*(self.c1 + self.c2) ## only schnaken
-        v_star = (self.c3/self.c2) * (1/u_star**2) ## only schnaken
+        u_star, v_star = getattr(self, "get_hom_state_" + self.func)() # gets homogenous state for current reaction model
+
         ones = np.ones((self.num_dx, self.num_dy))
 
         self.ugrid[0] = (u_star)*ones + np.random.uniform(low=-0.05, high=0.05, size=(self.num_dx, self.num_dy))
@@ -87,7 +92,9 @@ class Grid:
         n = np.transpose(n)
         m = np.arange(M); m[int(M/2)+1:]-=M
         return (self.D_u*(ifft2(-(2*np.pi*n/N)**2*fft2(u)) + ifft2(-(2*np.pi*m/M)**2*fft2(u))) + 
-            self.c1 - self.c_*u + self.c3*u**2*v).real
+            self.f(u,v)).real
+        # return (self.D_u*(ifft2(-(2*np.pi*n/N)**2*fft2(u)) + ifft2(-(2*np.pi*m/M)**2*fft2(u))) + 
+        #     self.c1 - self.c_*u + self.c3*u**2*v).real
 
     def rhsfv(self, u, v):
         N, M = np.shape(v)
@@ -96,7 +103,9 @@ class Grid:
         n = np.transpose(n) 
         m = np.arange(M); m[int(M/2)+1:]-=M
         return (self.D_v*(ifft2(-(2*np.pi*n/N)**2*fft2(v)) + ifft2(-(2*np.pi*m/M)**2*fft2(v))) + 
-                self.c2 - self.c3*u**2*v).real
+                self.g(u,v)).real
+        # return (self.D_v*(ifft2(-(2*np.pi*n/N)**2*fft2(v)) + ifft2(-(2*np.pi*m/M)**2*fft2(v))) + 
+        #         self.c2 - self.c3*u**2*v).real
 
     def rhsf(self, w, t):
         # w is an array with w = [u, v] where u and v are matrices
@@ -139,6 +148,20 @@ class Grid:
 
         return np.array([u,v])
 
+    # Grierer-Meinhardt reaction functions
+    def GM_f(self, u, v):
+        return self.c1 - self.c2*u + self.c3*( u**2 / ((1 + self.k*u**2)*v) )
+
+    def GM_g(self, u, v):
+        return self.c4*u**2 - self.c5*v
+
+    # Schnakenberg reaction functions
+    def Sch_f(self, u, v):
+        return self.c1 - self.c_*u + self.c3*u**2*v     
+
+    def Sch_g(self, u, v):
+        return self.c2 - self.c3*u**2*v
+
     # returns True if the parameters passed to the function meets the instability 
     # critera for the given reaction function (ex.: "Sch" for Schnakenberg)
     # params = [c_-1, c1, c2, c3, c4, c5, k, D_u, D_v]
@@ -160,6 +183,57 @@ class Grid:
                 return False
 
             return True
+        
+        # GM reaction model
+        if self.func == "GM":
+            u0, v0 = self.get_hom_state_GM(0)
+
+            # criterion 1
+            if -self.c2 -self.c5 - 2*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) > 0:
+                return False
+
+            crit2 = (self.c5*self.c2 
+            + 2*self.c5*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) 
+            - 2*self.c3*self.c4*(u0**3 / ( (1 + self.k*u0**2)**2) * v0**2))
+            if crit2 < 0:
+                return False
+
+            if self.D_u*self.c5 - self.D_v*self.c2 - 2*self.D_v*self.c3*(u0 / ((1 + self.k*u0**2) * v0)) < 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) or 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) < 0:
+                return False
+
+            return True
+
+    def get_hom_state_Sch(self):
+        u_star = (1/self.k)*(self.c1 + self.c2) # 
+        v_star = (self.c3/self.c2) * (1/u_star**2) 
+        return u_star, v_star
+    
+    def get_hom_state_GM(self, root_guess):
+        
+        # newton iteration for finding u_star. 
+        u_star = root_guess
+        while True:
+            last = u_star
+
+            if self.delta_u_star_eq(u_star) != 0:
+                u_star = u_star - self.u_star_eq(u_star) / self.delta_u_star_eq(u_star)
+            else:
+                print("tf dude that's illegal. chillax my g. derivata = 0")
+
+        
+            if abs(u_star - last) < 10**-5:
+                break
+
+        v_star = (self.c4/self.c5) * (u_star**2) # derived from fixed point eq. See comment in u_star_eq below.
+
+        return u_star, v_star
+
+    def u_star_eq(self, root):
+        # derived from GM functions. Namely, finding fixed points for f=0, g=0. This u_star rite here 
+        return -self.k*self.c2*(root**3) + self.k*self.c1*(root**2) - self.c2*(root) + self.c1 - (self.c3*self.c5 / self.c4)
+
+    def delta_u_star_eq(self, root):
+        return -3*self.k*self.c2*(root**2) + 2*self.k*self.c1*(root) - self.c2
         
 
 def main():
