@@ -25,8 +25,8 @@ class Grid:
     c1=0.1, 
     c2=0.9, 
     c3=1,
-    c4=0,
-    c5=0,
+    c4=1,
+    c5=1,
         ):
 
         self.func = func
@@ -56,7 +56,10 @@ class Grid:
 
     # generate homogenous grid with random perturbations
     def initializeGrid(self):
-        u_star, v_star = getattr(self, "get_hom_state_" + self.func)() # gets homogenous state for current reaction model
+        if self.func == "GM":
+            u_star, v_star = self.get_hom_state_GM(root_guess=0)
+        else: # "Sch"
+            u_star, v_star = self.get_hom_state_Sch()
 
         ones = np.ones((self.num_dx, self.num_dy))
 
@@ -64,26 +67,19 @@ class Grid:
         self.vgrid[0] = (v_star)*ones + np.random.uniform(low=-0.05, high=0.05, size=(self.num_dx, self.num_dy))
 
     def integrate(self, tend=2):
-        self.initializeGrid()
         t = np.linspace(0,tend,tend+1)
         w0 = np.array([self.ugrid[0],self.vgrid[0]])
         w0 = self.gridstoarray(w0)
         wresult = odeint(self.rhsf, w0, t, printmessg=True)
-        w = wresult[-1]
-        w = self.arraytogrids(w)
-        u = w[0]
-        v = w[1]
-        fig = plt.figure()
-        ax = plt.subplot()
-        im = ax.imshow(u)
-        fig.colorbar(im)
-        plt.show()
 
-        fig = plt.figure()
-        ax = plt.subplot()
-        im = ax.imshow(v)
-        fig.colorbar(im)
-        plt.show()
+        return wresult
+
+    def integrate_step(self, w0, frames_per_t):
+        t = np.linspace(0, 1, frames_per_t+1)
+        w0 = self.gridstoarray(w0)
+        wresult = odeint(self.rhsf, w0, t, printmessg=True)
+
+        return wresult
 
     def rhsfu(self, u, v):
         N, M = np.shape(u)
@@ -204,7 +200,7 @@ class Grid:
             return True
 
     def get_hom_state_Sch(self):
-        u_star = (1/self.k)*(self.c1 + self.c2) # 
+        u_star = (1/self.k)*(self.c1 + self.c2) # hom state for schnaken
         v_star = (self.c3/self.c2) * (1/u_star**2) 
         return u_star, v_star
     

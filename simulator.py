@@ -25,11 +25,6 @@ class Simulator:
 
     def snapshot(self, step) :
 
-        """
-            This is an 'auxillary' function needed by animation.FuncAnimation
-            in order to show the animation of the 2D Lennard-Jones system
-        """
-
         if step > 0:
             step = step - 1
             if step%10==0:
@@ -46,3 +41,25 @@ class Simulator:
         anim = animation.FuncAnimation(self.fig, self.snapshot,
             frames=nn, interval=1, blit=True, repeat=False)
         plt.show()  # show the animation
+
+
+    def simulate(self):
+        nn = self.grid.num_timesteps
+        for step in range(nn):
+            self.grid.fwdEulerStep(step)
+
+        # plot u
+        fig = plt.figure()
+        ax = plt.subplot()
+        im = ax.imshow(self.grid.ugrid[-1])
+        fig.colorbar(im)
+        plt.show()
+
+        # plot v
+        fig = plt.figure()
+        ax = plt.subplot()
+        im = ax.imshow(self.grid.vgrid[-1])
+        fig.colorbar(im)
+        plt.show()
+
+        
