@@ -1,3 +1,8 @@
+solverspectraltest.py
+test.py
+testshow.py
+var_param_spectral
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
