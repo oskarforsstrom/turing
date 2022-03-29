@@ -43,23 +43,84 @@ class Simulator:
         plt.show()  # show the animation
 
 
-    def simulate(self):
+    def simulate(self, plotInit=False):
         nn = self.grid.num_timesteps
-        for step in range(nn):
+        for step in range(nn-1):
             self.grid.fwdEulerStep(step)
 
-        # plot u
-        fig = plt.figure()
-        ax = plt.subplot()
-        im = ax.imshow(self.grid.ugrid[-1])
-        fig.colorbar(im)
-        plt.show()
+        if plotInit:
+            # plot u
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            fig.suptitle('u')
+            ax1.set_title("initial state")
+            ax2.set_title("final state")
+            im = ax1.imshow(self.grid.ugrid[0])
+            ax2.imshow(self.grid.ugrid[-1])
+            fig.colorbar(im)
+            plt.show()
 
-        # plot v
-        fig = plt.figure()
-        ax = plt.subplot()
-        im = ax.imshow(self.grid.vgrid[-1])
-        fig.colorbar(im)
-        plt.show()
+            # plot v
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            fig.suptitle('v')
+            ax1.set_title("initial state", fontsize=20)
+            ax2.set_title("final state", fontsize=20)
+            im = ax1.imshow(self.grid.vgrid[0])
+            ax2.imshow(self.grid.vgrid[-1])
+            fig.colorbar(im)
+            plt.show()
+        else:
+            # plot u
+            fig = plt.figure()
+            fig.suptitle('u', fontsize=20)
+            ax = plt.subplot()
+            im = ax.imshow(self.grid.ugrid[-1])
+            fig.colorbar(im)
+            plt.show()
+
+            # plot v
+            fig = plt.figure()
+            fig.suptitle('v', fontsize=20)
+            ax = plt.subplot()
+            im = ax.imshow(self.grid.vgrid[-1])
+            fig.colorbar(im)
+            plt.show()
+
+    
+
+    # simulates multiple runs with same initial grid
+    def initStateGrind(self, num_runs, tend, morphogen):
+
+        runs = []
+
+        # do multiple runs with same initial grid
+        self.grid.initializeGrid()
+        init_u = self.grid.ugrid[0]
+        init_v = self.grid.vgrid[0]
+        for i in range(num_runs):
+            nn = self.grid.num_timesteps
+            for step in range(nn):
+                self.grid.fwdEulerStep(step)
+
+            runs.append([self.grid.ugrid])
+
+            # reset grid after one run
+            self.grid.ugrid = np.zeros((self.grid.num_timesteps, self.grid.num_dx, self.grid.num_dy))
+            self.grid.vgrid = np.zeros((self.grid.num_timesteps, self.grid.num_dx, self.grid.num_dy))
+            self.grid.ugrid[0] = init_u
+            self.grid.vgrid[0] = init_v
+
+        if morphogen == "u":
+            state = 0
+        else:
+            state = 1
+
+        for run in runs:
+            morph = run[state]
+            fig = plt.figure()
+            fig.suptitle(morphogen, fontsize=20)
+            ax = plt.subplot()
+            im = ax.imshow(morph)
+            fig.colorbar(im)
+            plt.show()
 
         
