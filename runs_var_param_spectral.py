@@ -23,18 +23,18 @@ def app_var_param():
     """
     Common: D_u, D_v
     
-    Sch: c_, c_1, c_2, c_3
+    Sch: c_, c1, c2, c3
 
-    GM: c_1, c_2, c_3, c_4, c_5, k
+    GM: c1, c2, c3, c4, c5, k
     """
 
-    func = 'Sch'
-    tend = 1
-    varied_parameter = 'c_'
+    func = 'GM'
+    tend = 8
+    varied_parameter = 'c3'
     var_mid = 1
     
     var_range = 0.1
-    var_num = 2
+    var_num = 20
 
     params = np.linspace(-var_range, var_range, var_num)
     params = params + var_mid
@@ -68,24 +68,52 @@ def app_var_param():
     np.save(param_path, np.array(param_save))
     np.save(w_path, np.array(w_save))
 
-def get_param_range(param, grid):
+# takes string of parameter. "c1"
+# returns list containing elements of type [lo, hi] that denote the ranges of values
+# for the given parameter that permit Turing patterns
+def get_param_range(param):
 
+    # initialize grid to be able to check its parameters
+    grid = Grid()
+
+    delta = 0.01
     vals = []
 
-    for value in range(200):
-        value = value*0.01
+    # loop over large value range for given parameter and adds
+    # it to vals
+    for value in range(500):
+        value = value*delta
         grid_param = getattr(grid, param)
         grid_param = value
 
         if grid.param_check(): # if parameters permit TP
             vals.append(value)
 
-    ranges = [[val[0]]]
-    prev = val[0]
+    
+    idx = 0
+    ranges = [[vals[0]]] # ranges[idx] is the idx'th range for the parameter
+    prev = vals[0]
+
+    # Appends all values to ranges. If there are gaps in vals, they are added to separate lists in ranges
     for val in vals[1:]:
-        ranges
-        if val - prev != 0.01:
-            pass
+        if val - prev != delta:
+            ranges.append([val])
+            idx += 1
+        else: # no gap between last and current
+            ranges[idx].append(val)
+        
+        prev = val
+
+    intervals = []
+
+    for range in ranges:
+        lo = range[0]
+        hi = range[1]
+        intervals.append([lo, hi])
+
+    return intervals
+
+    
 
 
 
