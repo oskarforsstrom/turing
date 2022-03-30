@@ -29,12 +29,12 @@ def app_var_param():
     """
 
     func = 'Sch'
-    tend = 1
+    tend = 4
     varied_parameter = 'c_'
     var_mid = 1
     
     var_range = 0.1
-    var_num = 2
+    var_num = 50
 
     params = np.linspace(-var_range, var_range, var_num)
     params = params + var_mid
@@ -48,6 +48,8 @@ def app_var_param():
 
     param_save = [t[0] for t in result]
     w_save =[t[1] for t in result]
+    grid = Grid()
+    numdxdy_save = [grid.num_dx, grid.num_dy]
 
     dir = './var_param_spectral/'
     
@@ -57,16 +59,18 @@ def app_var_param():
     
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+    parametercode = '_' + varied_parameter
+    if not os.path.exists(dir + dt_string + parametercode +'/'):
+        os.makedirs(dir + dt_string + parametercode + '/')
+        print('Create path : {}'.format(dir + dt_string + parametercode + '/'))
 
-    if not os.path.exists(dir + dt_string + '/'):
-        os.makedirs(dir + dt_string + '/')
-        print('Create path : {}'.format(dir + dt_string + '/'))
-
-    param_path = dir + dt_string + '/param'
-    w_path = dir + dt_string + '/w'
+    param_path = dir + dt_string + parametercode + '/param'
+    w_path = dir + dt_string + parametercode + '/w'
+    numdxdy_path = dir + dt_string + parametercode + '/numdxdy'
 
     np.save(param_path, np.array(param_save))
     np.save(w_path, np.array(w_save))
+    np.save(numdxdy_path, np.array(numdxdy_save))
 
 def main():
     app_var_param()
