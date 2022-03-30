@@ -84,15 +84,16 @@ def get_param_range(param, func):
 
     # loop over large value range for given parameter and adds
     # it to vals
-    for value in range(500):
-        value = value*delta
-        grid_param = getattr(grid, param)
-        grid_param = value
+    for value in range(1000):
+        setattr(grid, param, value*delta) # set grid parameter to current parameter value
 
+        try: # handle divisions by zero
+            check = grid.param_check() # if parameters permit TP
+            if check:
+                vals.append(value) # saves integer
+        except:
+            continue
 
-        if grid.param_check(): # if parameters permit TP
-            vals.append(value)
-    
     if len(vals) != 0:
         idx = 0
         ranges = [[vals[0]]] # ranges[idx] is the idx'th range for the parameter
@@ -100,7 +101,7 @@ def get_param_range(param, func):
 
         # Appends all values to ranges. If there are gaps in vals, they are added to separate lists in ranges
         for val in vals[1:]:
-            if val - prev != delta:
+            if val - prev > 1:
                 ranges.append([val])
                 idx += 1
             else: # no gap between last and current
@@ -111,9 +112,14 @@ def get_param_range(param, func):
         intervals = []
 
         for rng in ranges:
-            lo = rng[0]
-            hi = rng[1]
-            intervals.append([lo, hi])
+            if len(rng) > 1:
+                lo = delta*rng[0]
+                hi = delta*rng[-1]
+                intervals.append([lo, hi])
+            else:
+                lo = delta*rng[0]
+                hi = lo
+                intervals.append([lo,hi])
 
         return intervals
     else:

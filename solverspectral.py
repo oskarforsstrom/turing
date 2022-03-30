@@ -20,10 +20,10 @@ class Grid:
     num_dy = 50,
     D_u = 1,
     D_v = 40,
-    k=1, 
+    k=4, 
     c_=1,
     c1=0.1,         # Sch: 0.1 GM: 0.5
-    c2=0.9,         # Sch: 0.9 GM: 0.5
+    c2=0.01,         # Sch: 0.9 GM: 0.5
     c3=1,           # Sch: 1   GM: 0.1
     c4=0.8,
     c5=0.2,
@@ -231,6 +231,7 @@ class Grid:
     def get_hom_state_GM(self):
         
         # newton iteration for finding u_star. 
+        N_iter = 0
         u_star = self.root_guess
         while True:
             last = u_star
@@ -238,11 +239,18 @@ class Grid:
             if self.delta_u_star_eq(u_star) != 0:
                 u_star = u_star - self.u_star_eq(u_star) / self.delta_u_star_eq(u_star)
             else:
-                print("tf dude that's illegal. chillax my g. derivata = 0")
+                u_star = 10*np.random.rand()
 
         
             if abs(u_star - last) < 10**-5:
                 break
+
+            # try new guess if method fails to converge
+            if N_iter > 10**5:
+                N_iter = 0
+                u_star = 10*np.random.rand()
+        
+            N_iter += 1
 
         v_star = (self.c4/self.c5) * (u_star**2) # derived from fixed point eq. See comment in u_star_eq below.
 
