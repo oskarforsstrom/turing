@@ -22,9 +22,9 @@ class Grid:
     D_v = 40,
     k=1, 
     c_=1,
-    c1=0.5,         # Sch: 0.1 GM: 0.5
-    c2=0.5,         # Sch: 0.9 GM: 0.5
-    c3=0.1,           # Sch: 1   GM: 0.1
+    c1=0.1,         # Sch: 0.1 GM: 0.5
+    c2=0.9,         # Sch: 0.9 GM: 0.5
+    c3=1,           # Sch: 1   GM: 0.1
     c4=0.8,
     c5=0.2,
         ):
@@ -54,10 +54,13 @@ class Grid:
         self.ugrid = np.zeros((self.num_timesteps, self.num_dx, self.num_dy))
         self.vgrid = np.zeros((self.num_timesteps, self.num_dx, self.num_dy))
 
+        if func == "GM":
+            self.root_guess = 1
+
     # generate homogenous grid with random perturbations
     def initializeGrid(self):
         if self.func == "GM":
-            u_star, v_star = self.get_hom_state_GM(root_guess=0)
+            u_star, v_star = self.get_hom_state_GM()
         else: # "Sch"
             u_star, v_star = self.get_hom_state_Sch()
 
@@ -182,7 +185,7 @@ class Grid:
         
         # GM reaction model
         if self.func == "GM":
-            u0, v0 = self.get_hom_state_GM(0)
+            u0, v0 = self.get_hom_state_GM()
 
             # criterion 1
             if -self.c2 -self.c5 - 2*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) > 0:
@@ -204,10 +207,10 @@ class Grid:
         v_star = (self.c3/self.c2) * (1/u_star**2) 
         return u_star, v_star
     
-    def get_hom_state_GM(self, root_guess):
+    def get_hom_state_GM(self):
         
         # newton iteration for finding u_star. 
-        u_star = root_guess
+        u_star = self.root_guess
         while True:
             last = u_star
 
