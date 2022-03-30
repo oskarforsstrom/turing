@@ -106,9 +106,9 @@ def get_param_range(param):
 
     intervals = []
 
-    for range in ranges:
-        lo = range[0]
-        hi = range[1]
+    for rng in ranges:
+        lo = rng[0]
+        hi = rng[1]
         intervals.append([lo, hi])
 
     return intervals
