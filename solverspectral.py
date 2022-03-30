@@ -191,16 +191,17 @@ class Grid:
                 return False
 
             # criterion 1
-            if -self.c2 -self.c5 - 2*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) > 0:
+            if -self.c2 -self.c5 - 2*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) > 0:
                 return False
 
             crit2 = (self.c5*self.c2 
-            + 2*self.c5*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) 
-            - 2*self.c3*self.c4*(u0**3 / ( (1 + self.k*u0**2)**2) * v0**2))
+            + 2*self.c5*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) 
+            - 2*self.c3*self.c4*(u0**3 / ( (v0**2)*(1 + self.k*u0**2)**2) )
+            )
             if crit2 < 0:
                 return False
 
-            if self.D_u*self.c5 - self.D_v*self.c2 - 2*self.D_v*self.c3*(u0 / ((1 + self.k*u0**2) * v0)) < 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) or 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) < 0:
+            if self.D_u*self.c5 - self.D_v*self.c2 - 2*self.D_v*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) < 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) or 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) < 0:
                 return False
 
             return True
