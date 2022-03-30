@@ -52,7 +52,7 @@ class Simulator:
         plt.show()  # show the animation
 
 
-    def simulate(self, tend):
+    def simulate(self, tend, plotInit=False):
         # does tend no. of spectral time steps and converts back to u and v
         wresult = self.grid.integrate(tend)
         w = wresult[-1]
@@ -60,28 +60,42 @@ class Simulator:
         u = w[0]
         v = w[1]
 
-        # plot u
-        fig, (ax1, ax2) = plt.subplots(1, 2)
-        fig.suptitle('Left')
-        ax1.set_title("initial state")
-        ax2.set_title("final state")
-        im = ax1.imshow(self.grid.ugrid[0])
-        ax2.imshow(u)
-        fig.colorbar(im)
+        if plotInit:
+            # plot u
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            fig.suptitle('u', fontsize=20)
+            ax1.set_title("initial state")
+            ax2.set_title("final state")
+            im = ax1.imshow(self.grid.vgrid[0])
+            ax2.imshow(u)
+            fig.colorbar(im)
+            plt.show()
 
-        # plot u
-        fig = plt.figure()
-        ax = plt.subplot()
-        im = ax.imshow(u)
-        fig.colorbar(im)
-        plt.show()
+            # plot v
+            fig, (ax1, ax2) = plt.subplots(1, 2)
+            fig.suptitle('v', fontsize=20)
+            ax1.set_title("initial state")
+            ax2.set_title("final state")
+            im = ax1.imshow(self.grid.vgrid[0])
+            ax2.imshow(u)
+            fig.colorbar(im)
+            plt.show()
+        else:
+            # plot u
+            fig = plt.figure()
+            fig.suptitle("u", fontsize=20)
+            ax = plt.subplot()
+            im = ax.imshow(u)
+            fig.colorbar(im)
+            plt.show()
 
-        # plot v
-        fig = plt.figure()
-        ax = plt.subplot()
-        im = ax.imshow(v)
-        fig.colorbar(im)
-        plt.show()
+            # plot v
+            fig = plt.figure()
+            fig.suptitle("v", fontsize=20)
+            ax = plt.subplot()
+            im = ax.imshow(v)
+            fig.colorbar(im)
+            plt.show()
 
     # simulates multiple runs with same initial grid
     def initStateGrind(self, num_runs, tend, morphogen):
@@ -112,6 +126,7 @@ class Simulator:
         for run in runs:
             morph = run[state]
             fig = plt.figure()
+            fig.suptitle(morphogen, fontsize=20)
             ax = plt.subplot()
             im = ax.imshow(morph)
             fig.colorbar(im)
