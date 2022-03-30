@@ -164,21 +164,27 @@ class Grid:
     # returns True if the parameters passed to the function meets the instability 
     # critera for the given reaction function (ex.: "Sch" for Schnakenberg)
     # params = [c_-1, c1, c2, c3, c4, c5, k, D_u, D_v]
-    def param_check(self):
-
-        sh1 = (self.c3/self.c_) * (self.c1 + self.c2) # shortcut 1
+    def param_check(self, printErr=False):
 
         # Schnakenberg reaction model
         if self.func == "Sch":
 
+            sh1 = (self.c3/self.c_) * (self.c1 + self.c2) # shortcut 1
+
             # criterion 1
             if -self.c_ + (2 * self.c_* self.c2)/(self.c1 + self.c2) - sh1**2 > 0:
+                if printErr:
+                    print("criterion 1 failed")
                 return False
             # criterion 2
             if sh1 < 0:
+                if printErr:
+                    print("criterion 2 failed")
                 return False
             # criterion 3
             if -self.D_u*(sh1**2 / self.c3) + self.D_v*self.c_ + self.D_v*(2 * self.c_ * self.c2)/(self.c1 + self.c2) < 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) or 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) < 0:
+                if printErr:    
+                    print("criterion 3 failed")
                 return False
 
             return True
@@ -188,20 +194,31 @@ class Grid:
             u0, v0 = self.get_hom_state_GM()
 
             if u0 < 0 or v0 < 0:
+                if printErr:
+                    print("negative hom state")
                 return False
 
             # criterion 1
-            if -self.c2 -self.c5 - 2*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) > 0:
+            if -self.c2 -self.c5 + 2*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) > 0:
+                if printErr:
+                    print("criterion 1 failed")
                 return False
 
+            # criterion 2
             crit2 = (self.c5*self.c2 
-            + 2*self.c5*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) 
-            - 2*self.c3*self.c4*(u0**3 / ( (v0**2)*(1 + self.k*u0**2)**2) )
+            - 2*self.c5*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) 
+            + 2*self.c3*self.c4*(u0**3 / ( (v0**2)*(1 + self.k*u0**2)**2) )
             )
             if crit2 < 0:
+                if printErr:
+                    print("criterion 2 failed")
                 return False
 
-            if self.D_u*self.c5 - self.D_v*self.c2 - 2*self.D_v*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) < 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) or 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) < 0:
+            # criterion 3
+            if -self.D_u*self.c5 - self.D_v*self.c2 + 2*self.D_v*self.c3*(u0 / ( v0*(1 + self.k*u0**2)**2 )) < 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) or 2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) < 0:
+                if printErr:
+                    print(2*m.sqrt(self.D_u * self.D_v) * m.sqrt(crit2) < 0)
+                    print("criterion 3 failed")
                 return False
 
             return True
