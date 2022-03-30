@@ -72,6 +72,27 @@ def app_var_param():
     np.save(w_path, np.array(w_save))
     np.save(numdxdy_path, np.array(numdxdy_save))
 
+def get_param_range(param, grid):
+
+    vals = []
+
+    for value in range(200):
+        value = value*0.01
+        grid_param = getattr(grid, param)
+        grid_param = value
+
+        if grid.param_check(): # if parameters permit TP
+            vals.append(value)
+
+    ranges = [[val[0]]]
+    prev = val[0]
+    for val in vals[1:]:
+        ranges
+        if val - prev != 0.01:
+            pass
+
+
+
 def main():
     app_var_param()
 
