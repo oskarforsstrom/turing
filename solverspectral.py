@@ -187,6 +187,9 @@ class Grid:
         if self.func == "GM":
             u0, v0 = self.get_hom_state_GM()
 
+            if u0 < 0 or v0 < 0:
+                return False
+
             # criterion 1
             if -self.c2 -self.c5 - 2*self.c3*(u0 / ( (1 + self.k*u0**2)**2) * v0) > 0:
                 return False
