@@ -28,10 +28,10 @@ def app_var_param():
     GM: c1, c2, c3, c4, c5, k
     """
 
-    func = 'GM'
+    func = 'Sch'
     tend = 8
-    varied_parameter = 'c3'
-    var_mid = 1
+    varied_parameter = 'c1'
+    var_mid = 0.1
     
     var_range = 0.1
     var_num = 20
@@ -48,6 +48,8 @@ def app_var_param():
 
     param_save = [t[0] for t in result]
     w_save =[t[1] for t in result]
+    grid = Grid()
+    numdxdy_save = [grid.num_dx, grid.num_dy]
 
     dir = './var_param_spectral/'
     
@@ -57,63 +59,81 @@ def app_var_param():
     
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
+    parametercode = '_' + varied_parameter
+    if not os.path.exists(dir + dt_string + parametercode +'/'):
+        os.makedirs(dir + dt_string + parametercode + '/')
+        print('Create path : {}'.format(dir + dt_string + parametercode + '/'))
 
-    if not os.path.exists(dir + dt_string + '/'):
-        os.makedirs(dir + dt_string + '/')
-        print('Create path : {}'.format(dir + dt_string + '/'))
-
-    param_path = dir + dt_string + '/param'
-    w_path = dir + dt_string + '/w'
+    param_path = dir + dt_string + parametercode + '/param'
+    w_path = dir + dt_string + parametercode + '/w'
+    numdxdy_path = dir + dt_string + parametercode + '/numdxdy'
 
     np.save(param_path, np.array(param_save))
     np.save(w_path, np.array(w_save))
+    np.save(numdxdy_path, np.array(numdxdy_save))
 
-# takes string of parameter. "c1"
-# returns list containing elements of type [lo, hi] that denote the ranges of values
-# for the given parameter that permit Turing patterns
-def get_param_range(param):
+
+
+def get_param_range(param, func):
+
 
     # initialize grid to be able to check its parameters
-    grid = Grid()
+    grid = Grid(func=func)
+
 
     delta = 0.01
     vals = []
 
+
     # loop over large value range for given parameter and adds
     # it to vals
-    for value in range(500):
-        value = value*delta
-        grid_param = getattr(grid, param)
-        grid_param = value
+    for value in range(1000):
+        setattr(grid, param, value*delta) # set grid parameter to current parameter value
 
-        if grid.param_check(): # if parameters permit TP
-            vals.append(value)
 
-    
-    idx = 0
-    ranges = [[vals[0]]] # ranges[idx] is the idx'th range for the parameter
-    prev = vals[0]
+        try: # handle divisions by zero
+            check = grid.param_check() # if parameters permit TP
+            if check:
+                vals.append(value) # saves integer
+        except:
+            continue
 
-    # Appends all values to ranges. If there are gaps in vals, they are added to separate lists in ranges
-    for val in vals[1:]:
-        if val - prev != delta:
-            ranges.append([val])
-            idx += 1
-        else: # no gap between last and current
-            ranges[idx].append(val)
-        
-        prev = val
 
-    intervals = []
+    if len(vals) != 0:
+        idx = 0
+        ranges = [[vals[0]]] # ranges[idx] is the idx'th range for the parameter
+        prev = vals[0]
 
-    for rng in ranges:
-        lo = rng[0]
-        hi = rng[1]
-        intervals.append([lo, hi])
 
-    return intervals
+        # Appends all values to ranges. If there are gaps in vals, they are added to separate lists in ranges
+        for val in vals[1:]:
+            if val - prev > 1:
+                ranges.append([val])
+                idx += 1
+            else: # no gap between last and current
+                ranges[idx].append(val)
+            
+            prev = val
 
-    
+
+        intervals = []
+
+
+        for rng in ranges:
+            if len(rng) > 1:
+                lo = delta*rng[0]
+                hi = delta*rng[-1]
+                intervals.append([lo, hi])
+            else:
+                lo = delta*rng[0]
+                hi = lo
+                intervals.append([lo,hi])
+
+
+        return intervals
+    else:
+        print("No range found for {} for given parameters.".format(param))
+        return None
 
 
 
