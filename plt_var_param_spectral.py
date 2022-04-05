@@ -2,17 +2,35 @@ from solverspectral import Grid
 
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 def main():
     dir = './var_param_spectral/'
-    
-    dt_string = '29-03-2022_16-07-29'
-    varied_parameter = 'c_' 
-    parametercode = '_' + varied_parameter
 
-    param = np.load(dir + dt_string + parametercode + '/' + 'param.npy')
-    w = np.load(dir + dt_string + parametercode + '/' + 'w.npy')
-    numdxdy = np.load(dir + dt_string + parametercode + '/' + 'numdxdy.npy')
+    if len(sys.argv) > 1:
+        seq_id = sys.argv[1]
+        
+        varied_parameter = ''
+        for idx, char in enumerate(reversed(seq_id)):
+            if char == '_' and idx != 0:
+                break
+            else:
+                varied_parameter += char
+
+        varied_parameter = ''.join(list(reversed(varied_parameter)))
+
+    else:
+        dt_string = '04-04-2022_23-20-00'
+        varied_parameter = 'c4' 
+        parametercode = '_' + varied_parameter
+
+        seq_id = dt_string + parametercode
+
+    load_dir = dir + seq_id
+
+    param = np.load(load_dir + '/' + 'param.npy')
+    w = np.load(load_dir + '/' + 'w.npy')
+    numdxdy = np.load(load_dir + '/' + 'numdxdy.npy')
     grid = Grid(num_dx = numdxdy[0], num_dy=numdxdy[1])
     for idx, param in enumerate(param):
         wtemp = w[idx][-1]
