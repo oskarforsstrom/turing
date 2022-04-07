@@ -20,8 +20,13 @@ def main():
         varied_parameter = ''.join(list(reversed(varied_parameter)))
 
     else:
+
+        """--------------------"""
+        """Lägg in manuellt här"""
+        """--------------------"""
+
         dt_string = '04-04-2022_23-20-00'
-        varied_parameter = 'c4' 
+        varied_parameter = 'c_' 
         parametercode = '_' + varied_parameter
 
         seq_id = dt_string + parametercode
@@ -42,9 +47,10 @@ def main():
         fig.suptitle(varied_parameter + ' = ' + str(param))
         ax1.set_title("u")
         ax2.set_title("v")
-        im = ax1.imshow(u)
-        ax2.imshow(v)
-        fig.colorbar(im)
+        im1 = ax1.imshow(u)
+        im2 = ax2.imshow(v)
+        plt.colorbar(im1, ax=ax1)
+        plt.colorbar(im2, ax=ax2)
         plt.show()
 
 
