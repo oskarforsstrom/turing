@@ -20,13 +20,13 @@ class Grid:
     num_dy = 50,
     D_u = 1,
     D_v = 40,
-    k=4, 
+    k=2.9, 
     c_=1,
-    c1=0.1,         # Sch: 0.1 GM: 0.1
-    c2=0.01,         # Sch: 0.9 GM: 0.01
-    c3=1,           # Sch: 1   GM: 1
-    c4=0.8,
-    c5=0.2,
+    c1=3.2,             # Sch: 0.1 GM: 0.1
+    c2=0.05,            # Sch: 0.9 GM: 0.01
+    c3=6.8,            # Sch: 1   GM: 0.11
+    c4=1.2,
+    c5=2,
         ):
 
         self.func = func
@@ -224,8 +224,8 @@ class Grid:
             return True
 
     def get_hom_state_Sch(self):
-        u_star = (1/self.k)*(self.c1 + self.c2) # hom state for schnaken
-        v_star = (self.c3/self.c2) * (1/u_star**2) 
+        u_star = (1/self.c_)*(self.c1 + self.c2) # hom state for schnaken
+        v_star = (self.c2/self.c3) * (1/u_star**2) 
         return u_star, v_star
     
     def get_hom_state_GM(self):
@@ -240,9 +240,8 @@ class Grid:
                 u_star = u_star - self.u_star_eq(u_star) / self.delta_u_star_eq(u_star)
             else:
                 u_star = 10*np.random.rand()
-
         
-            if abs(u_star - last) < 10**-5:
+            if abs(u_star - last) < 10**-10:
                 break
 
             # try new guess if method fails to converge
@@ -258,10 +257,10 @@ class Grid:
 
     def u_star_eq(self, root):
         # derived from GM functions. Namely, finding fixed points for f=0, g=0. This u_star rite here 
-        return -self.k*self.c2*(root**3) + self.k*self.c1*(root**2) - self.c2*(root) + self.c1 - (self.c3*self.c5 / self.c4)
+        return self.c1 - self.c2*(root) + (self.c3*self.c5 / self.c4)*( 1/(1 + self.k*(root**2)) )
 
     def delta_u_star_eq(self, root):
-        return -3*self.k*self.c2*(root**2) + 2*self.k*self.c1*(root) - self.c2
+        return - self.c2 - (self.c3*self.c5 / self.c4)*self.k*(root) * ( 1/(1 + self.k*(root**2)) )**2
         
 
 def main():
