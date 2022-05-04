@@ -22,9 +22,9 @@ class Grid:
     D_v = 40,
     k=2.9, 
     c_=1,
-    c1=3.2,             # Sch: 0.1 GM: 0.1
-    c2=0.05,            # Sch: 0.9 GM: 0.01
-    c3=6.8,            # Sch: 1   GM: 0.11
+    c1=0.1,             # Sch: 0.1 GM: 0.1
+    c2=0.9,            # Sch: 0.9 GM: 0.01
+    c3=1,            # Sch: 1   GM: 0.11
     c4=1.2,
     c5=2,
         ):
@@ -70,7 +70,7 @@ class Grid:
         self.vgrid[0] = (v_star)*ones + np.random.uniform(low=-0.05, high=0.05, size=(self.num_dx, self.num_dy))
 
     def integrate(self, tend=2):
-        t = np.linspace(0,tend,tend+1)
+        t = np.linspace(0,tend,2)
         w0 = np.array([self.ugrid[0],self.vgrid[0]])
         w0 = self.gridstoarray(w0)
         wresult = odeint(self.rhsf, w0, t, printmessg=True)
@@ -168,21 +168,22 @@ class Grid:
 
         # Schnakenberg reaction model
         if self.func == "Sch":
-
-            sh1 = (self.c3/self.c_) * (self.c1 + self.c2) # shortcut 1
+            u0, v0 = self.get_hom_state_Sch()
 
             # criterion 1
-            if -self.c_ + (2 * self.c_* self.c2)/(self.c1 + self.c2) - sh1**2 > 0:
+            crit1 = -self.c_ + 2*self.c3*u0*v0 - self.c3*u0**2
+            if crit1 > 0:
                 if printErr:
                     print("criterion 1 failed")
                 return False
             # criterion 2
-            if sh1 < 0:
+            crit2 = self.c_*self.c3*u0**2
+            if crit2 < 0:
                 if printErr:
                     print("criterion 2 failed")
                 return False
             # criterion 3
-            if -self.D_u*(sh1**2 / self.c3) + self.D_v*self.c_ + self.D_v*(2 * self.c_ * self.c2)/(self.c1 + self.c2) < 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) or 2 * m.sqrt(self.D_u * self.D_v) * m.sqrt(sh1) < 0:
+            if -self.D_u*self.c3*u0**2 - self.D_v*self.c_ + self.D_v * 2*self.c3*u0*v0 < 2*m.sqrt(self.D_u*self.D_v) * m.sqrt(crit2) or 2*m.sqrt(self.D_u*self.D_v) * m.sqrt(crit2) < 0:
                 if printErr:    
                     print("criterion 3 failed")
                 return False
