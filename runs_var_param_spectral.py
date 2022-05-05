@@ -74,11 +74,11 @@ def app_var_param():
 
 
 
-def get_param_range(param, func):
+def get_param_range(param, grid):
 
     # initialize grid to be able to check its parameters
-    grid = Grid(func=func)
-    orig_param = param
+    # grid = Grid(func=func)
+    orig_param = getattr(grid, param)
 
     delta = 0.01
     vals = []
@@ -125,7 +125,7 @@ def get_param_range(param, func):
         setattr(grid, param, orig_param) 
         return intervals
     else:
-        print("No range found for {} for given parameters.".format(param))
+        # print("No range found for {} for given parameters.".format(param))
         setattr(grid, param, orig_param)
         return None
 
