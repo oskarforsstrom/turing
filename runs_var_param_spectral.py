@@ -28,13 +28,13 @@ def app_var_param():
     GM: c1, c2, c3, c4, c5, k
     """
 
-    func = 'GM'
-    tend = 8
-    varied_parameter = 'c1'
-    var_mid = 0.1
+    func = 'Sch'
+    tend = 20
+    varied_parameter = 'c_'
+    var_mid = 0.8
     
-    var_range = 0.1
-    var_num = 10
+    var_range = 0.2
+    var_num = 15
 
     params = np.linspace(-var_range, var_range, var_num)
     params = params + var_mid
@@ -78,13 +78,14 @@ def get_param_range(param, func):
 
     # initialize grid to be able to check its parameters
     grid = Grid(func=func)
+    orig_param = param
 
     delta = 0.01
     vals = []
 
     # loop over large value range for given parameter and adds
     # it to vals
-    for value in range(1000):
+    for value in range(10000):
         setattr(grid, param, value*delta) # set grid parameter to current parameter value
 
         try: # handle divisions by zero
@@ -121,9 +122,11 @@ def get_param_range(param, func):
                 hi = lo
                 intervals.append([lo,hi])
 
+        setattr(grid, param, orig_param) 
         return intervals
     else:
         print("No range found for {} for given parameters.".format(param))
+        setattr(grid, param, orig_param)
         return None
 
 
